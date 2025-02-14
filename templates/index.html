@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Gerador de QR Code</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; }
+        form { margin-bottom: 20px; }
+        input[type="url"] { width: 70%; padding: 8px; }
+        button { padding: 8px 15px; background: #4CAF50; color: white; border: none; cursor: pointer; }
+        .qr-container { margin-top: 20px; text-align: center; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+    <h1>Gerador de QR Code</h1>
+    
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <div class="error">
+                {% for message in messages %}
+                    <p>{{ message }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <form method="POST">
+        <input type="url" name="url" placeholder="https://exemplo.com" required>
+        <button type="submit">Gerar QR Code</button>
+    </form>
+
+    {% if url %}
+        <div class="qr-container">
+            <h2>Seu QR Code:</h2>
+            <img src="{{ url_for('generate_qr', url=url) }}" alt="QR Code">
+            <p><a href="{{ url_for('generate_qr', url=url, download=True) }}">⬇️ Baixar como JPG</a></p>
+        </div>
+    {% endif %}
+</body>
+</html>
