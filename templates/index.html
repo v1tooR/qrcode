@@ -1,18 +1,275 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Gerador de QR Code</title>
+    <title>Gerador de QR Code Avançado</title>
     <style>
-        body { font-family: Arial, sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; }
-        form { margin-bottom: 20px; }
-        input[type="url"] { width: 70%; padding: 8px; }
-        button { padding: 8px 15px; background: #4CAF50; color: white; border: none; cursor: pointer; }
-        .qr-container { margin-top: 20px; text-align: center; }
-        .error { color: red; }
+        /* Reset básico e variáveis */
+        :root {
+          --primary: #2563eb;
+          --success: #16a34a;
+          --error: #dc2626;
+          --background: #f8fafc;
+          --surface: #ffffff;
+          --text: #1e293b;
+          --border: #cbd5e1;
+        }
+        
+        * {
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
+          font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+        
+        body {
+          background: var(--background);
+          color: var(--text);
+          line-height: 1.6;
+          min-height: 100vh;
+          padding: 2rem;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+        }
+        
+        /* Container principal */
+        .container {
+          background: var(--surface);
+          max-width: 640px;
+          width: 100%;
+          padding: 2.5rem;
+          border-radius: 1.5rem;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+          margin: 2rem auto;
+        }
+        
+        /* Cabeçalho */
+        .header {
+          text-align: center;
+          margin-bottom: 2.5rem;
+        }
+        
+        .header h1 {
+          font-size: 2rem;
+          font-weight: 700;
+          color: var(--primary);
+          margin-bottom: 0.5rem;
+        }
+        
+        .header p {
+          color: #64748b;
+        }
+        
+        /* Formulário */
+        .form-group {
+          margin-bottom: 1.5rem;
+        }
+        
+        .form-label {
+          display: block;
+          font-weight: 500;
+          margin-bottom: 0.5rem;
+          color: #334155;
+        }
+        
+        .form-input {
+          width: 100%;
+          padding: 0.875rem;
+          border: 2px solid var(--border);
+          border-radius: 0.75rem;
+          font-size: 1rem;
+          transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        
+        .form-input:focus {
+          outline: none;
+          border-color: var(--primary);
+          box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+        
+        /* Color Picker */
+        .color-group {
+          display: flex;
+          gap: 1rem;
+          margin: 1.5rem 0;
+        }
+        
+        .color-item {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+        }
+        
+        .color-item input[type="color"] {
+          width: 3rem;
+          height: 3rem;
+          border: 2px solid var(--border);
+          border-radius: 0.75rem;
+          padding: 0.25rem;
+          cursor: pointer;
+          transition: transform 0.2s;
+        }
+        
+        .color-item input[type="color"]:hover {
+          transform: scale(1.05);
+        }
+        
+        /* File Upload */
+        .file-upload {
+          position: relative;
+          margin: 1.5rem 0;
+        }
+        
+        .file-upload input[type="file"] {
+          position: absolute;
+          left: 0;
+          top: 0;
+          opacity: 0;
+          width: 100%;
+          height: 100%;
+          cursor: pointer;
+        }
+        
+        .file-upload label {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          padding: 1rem;
+          background: var(--background);
+          border: 2px dashed var(--border);
+          border-radius: 0.75rem;
+          color: #64748b;
+          transition: all 0.2s;
+        }
+        
+        .file-upload:hover label {
+          border-color: var(--primary);
+          background: rgba(37, 99, 235, 0.05);
+        }
+        
+        .file-upload .file-name {
+          font-size: 0.875rem;
+          color: var(--primary);
+          font-weight: 500;
+        }
+        
+        /* Botões */
+        .btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.5rem;
+          padding: 0.875rem 1.5rem;
+          border: none;
+          border-radius: 0.75rem;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.2s;
+          width: 100%;
+          justify-content: center;
+        }
+        
+        .btn-primary {
+          background: var(--primary);
+          color: white;
+        }
+        
+        .btn-primary:hover {
+          background: #1d4ed8;
+          transform: translateY(-1px);
+          box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
+        }
+        
+        /* QR Code Container */
+        .qr-result {
+          margin-top: 2rem;
+          text-align: center;
+          animation: fadeIn 0.5s ease-out;
+        }
+        
+        .qr-image {
+          width: 100%;
+          max-width: 300px;
+          height: auto;
+          border: 2px solid var(--border);
+          border-radius: 1rem;
+          padding: 1rem;
+          background: white;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+        
+        .download-section {
+          margin-top: 1.5rem;
+          display: flex;
+          flex-direction: column;
+          gap: 1rem;
+        }
+        
+        /* Feedback states */
+        .loading {
+          position: relative;
+          pointer-events: none;
+          opacity: 0.7;
+        }
+        
+        .loading::after {
+          content: "";
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          width: 1.5rem;
+          height: 1.5rem;
+          border: 3px solid #fff;
+          border-top-color: transparent;
+          border-radius: 50%;
+          animation: spin 0.8s linear infinite;
+          margin-top: -0.75rem;
+          margin-left: -0.75rem;
+        }
+        
+        .error-message {
+          color: var(--error);
+          background: #fee2e2;
+          padding: 1rem;
+          border-radius: 0.75rem;
+          margin: 1rem 0;
+          display: flex;
+          gap: 0.5rem;
+          align-items: center;
+        }
+        
+        /* Animações */
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+        
+        /* Responsividade */
+        @media (max-width: 640px) {
+          body {
+            padding: 1rem;
+          }
+          
+          .container {
+            padding: 1.5rem;
+            border-radius: 1rem;
+          }
+          
+          .header h1 {
+            font-size: 1.5rem;
+          }
+          
+          .color-group {
+            flex-direction: column;
+          }
+        }
     </style>
 </head>
 <body>
-    <h1>Gerador de QR Code</h1>
+    
     
     {% with messages = get_flashed_messages() %}
         {% if messages %}
@@ -24,17 +281,128 @@
         {% endif %}
     {% endwith %}
 
-    <form method="POST">
-        <input type="url" name="url" placeholder="https://exemplo.com" required>
-        <button type="submit">Gerar QR Code</button>
-    </form>
+    <div class="container">
+        <header class="header">
+          <h1>Gerador de QR Code</h1>
+          <p>Crie QR Codes personalizados com logo e cores</p>
+        </header>
 
-    {% if url %}
-        <div class="qr-container">
-            <h2>Seu QR Code:</h2>
-            <img src="{{ url_for('generate_qr', url=url) }}" alt="QR Code">
-            <p><a href="{{ url_for('generate_qr', url=url, download=True) }}">⬇️ Baixar como JPG</a></p>
+        <form class="form" method="POST" enctype="multipart/form-data">
+            <div class="form-group">
+                <label class="form-label">URL Destino</label>
+                <input type="url" class="form-input" name="url" placeholder="https://exemplo.com" required>
+            </div>
+
+            <div class="color-group">
+                <div class="color-item">
+                    <input type="color" name="fill_color" value="#000000">
+                    <span>Cor do QR Code</span>
+                </div>
+                <div class="color-item">
+                    <input type="color" name="back_color" value="#FFFFFF">
+                    <span>Cor do Fundo do QR Code</span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="file-upload">
+                    <input type="file" name="logo" accept="image/*">
+                    <label>
+                        <span>Arraste ou clique para adicionar logo</span>
+                        <span class="file-name"></span>
+                      </label>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary">
+                Gerar QR Code
+            </button>
+        </form>
+
+        {% if qr_image %}
+
+        <div class="qr-result">
+            <img class="qr-image" src="data:image/png;base64,{{ qr_image }}" alt="QR Code Personalizado">
+            <div class="download-section">
+                <button class="btn btn-primary" onclick="downloadQR('png')">Baixar PNG</button>
+                <button class="btn btn-primary" onclick="downloadQR('svg')" style="margin-top: 0.5rem;">Baixar SVG</button>
+            </div>
         </div>
+            <!--<div class="qr-container">
+                <h2>Seu QR Code:</h2>
+                <img src="data:image/png;base64,{{ qr_image }}" alt="QR Code Personalizado">
+                <p><button onclick="downloadQR()">⬇️ Baixar PNG</button></p>
+            </div>-->
+    </div>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('form');
+            const errorDiv = document.querySelector('.error');
+            const loadingSpinner = document.createElement('div');
+            loadingSpinner.className = 'loading';
+
+            // Configurar spinner de carregamento
+            form.appendChild(loadingSpinner);
+            
+            // Função de download
+            window.downloadQR = function(format = 'png') {
+                const qrImage = document.querySelector('.qr-image');
+                if (!qrImage) return;
+
+                const fileName = `qrcode.${format}`;
+                
+                if (format === 'png') {
+                    // Download direto do PNG base64
+                    const link = document.createElement('a');
+                    link.download = fileName;
+                    link.href = qrImage.src;
+                    link.click();
+                } else {
+                    // Requisição para gerar SVG
+                    fetch('/download-svg', {
+                        method: 'POST',
+                        body: new FormData(form)
+                    })
+                    .then(response => response.blob())
+                    .then(blob => {
+                        const url = window.URL.createObjectURL(blob);
+                        const link = document.createElement('a');
+                        link.href = url;
+                        link.download = fileName;
+                        link.click();
+                        window.URL.revokeObjectURL(url);
+                    })
+                    .catch(error => {
+                        showError('Erro ao gerar SVG: ' + error.message);
+                    });
+                }
+            };
+
+            // Função de erro
+            function showError(message) {
+                errorDiv.innerHTML = `<p>${message}</p>`;
+                errorDiv.style.display = 'block';
+                setTimeout(() => errorDiv.style.display = 'none', 5000);
+            }
+
+            // Validação de URL em tempo real
+            document.querySelector('input[name="url"]').addEventListener('input', function(e) {
+                try {
+                    new URL(e.target.value);
+                    e.target.setCustomValidity('');
+                } catch {
+                    e.target.setCustomValidity('Insira uma URL válida');
+                }
+            });
+
+            // Atualizar UI ao selecionar arquivo
+            document.querySelector('input[name="logo"]').addEventListener('change', function(e) {
+                const fileName = e.target.files[0]?.name || '';
+                document.querySelector('.file-name').textContent = fileName;
+            });
+        });
+        </script>
     {% endif %}
 </body>
 </html>
