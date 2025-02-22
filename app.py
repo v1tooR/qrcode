@@ -7,7 +7,6 @@ import xml.etree.ElementTree as ET
 from PIL import Image
 
 app = Flask(__name__)
-app.secret_key = "sua_chave_secreta_aqui"
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
